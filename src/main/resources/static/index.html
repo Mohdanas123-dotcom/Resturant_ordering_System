@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restaurant Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3f6f4;
+    --panel: #ffffff;
+    --ink: #1b2622;
+    --muted: #62716b;
+    --line: #dde4e0;
+    --brand: #14473f;
+    --brand-soft: #e3efeb;
+    --accent: #e3a008;
+    --new: #2563eb;
+    --prep: #b45309;
+    --served: #047857;
+    --danger: #b91c1c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: grid; grid-template-columns: 210px 1fr; min-height: 100vh;
+  }
+  aside { background: var(--brand); color: #fff; padding: 22px 14px; position: sticky; top: 0; height: 100vh; }
+  aside h1 { font-size: 18px; font-weight: 800; margin: 0 8px 22px; line-height: 1.2; }
+  aside h1 span { display: block; color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 3px; }
+  nav button {
+    display: block; width: 100%; text-align: left; background: none; border: 0; color: #cfe1dc;
+    font: inherit; font-weight: 600; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 2px;
+  }
+  nav button:hover { background: rgba(255,255,255,.08); }
+  nav button.on { background: #fff; color: var(--brand); }
+  main { padding: 26px 30px 60px; max-width: 1150px; width: 100%; }
+  h2 { margin: 0 0 18px; font-size: 22px; }
+  h3 { margin: 0 0 12px; font-size: 15px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .stat b { display: block; font-size: 30px; font-weight: 800; margin-top: 4px; }
+  .stat small { color: var(--muted); font-weight: 600; }
+  .split { display: grid; grid-template-columns: minmax(300px, 380px) 1fr; gap: 18px; align-items: start; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .stack { display: grid; gap: 12px; }
+  label { font-size: 13px; font-weight: 700; color: var(--muted); display: grid; gap: 4px; }
+  input, select {
+    font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: #fff; min-width: 0;
+  }
+  input:focus, select:focus, button:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+  button.btn {
+    font: inherit; font-weight: 700; border: 1px solid var(--brand); background: var(--brand); color: #fff;
+    padding: 8px 14px; border-radius: 7px; cursor: pointer;
+  }
+  button.btn.ghost { background: #fff; color: var(--brand); }
+  button.btn.danger { background: #fff; color: var(--danger); border-color: #e7b4b4; }
+  button.btn.small { padding: 5px 10px; font-size: 13px; }
+  button.btn:disabled { opacity: .45; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th { color: var(--muted); font-size: 13px; }
+  .badge { font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 99px; background: var(--brand-soft); color: var(--brand); }
+  .NEW { background: #dbe7ff; color: var(--new); }
+  .PREPARING { background: #fdebd0; color: var(--prep); }
+  .SERVED { background: #d3f2e5; color: var(--served); }
+  .PAID { background: #e6e9e8; color: #44514c; }
+  .CANCELLED { background: #fbdcdc; color: var(--danger); }
+  .AVAILABLE { background: #d3f2e5; color: var(--served); }
+  .OCCUPIED { background: #fdebd0; color: var(--prep); }
+  .RESERVED { background: #dbe7ff; color: var(--new); }
+  .cat { margin: 14px 0 6px; font-size: 13px; font-weight: 800; color: var(--brand); }
+  .dish { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+  .dish.off { opacity: .45; }
+  .dish small { color: var(--muted); display: block; }
+  .qty { display: flex; align-items: center; gap: 8px; font-weight: 800; }
+  .qty button { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 16px; cursor: pointer; }
+  .order { border-left: 5px solid var(--line); margin-bottom: 12px; }
+  .order.NEW { border-left-color: var(--new); background: #fff; }
+  .order.PREPARING { border-left-color: var(--prep); background: #fff; }
+  .order.SERVED { border-left-color: var(--served); background: #fff; }
+  .order header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .order ul { margin: 0 0 10px; padding-left: 18px; font-size: 14px; }
+  .order footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-top: 16px; }
+  .tcard b { font-size: 24px; display: block; }
+  .tcard small { color: var(--muted); display: block; margin-bottom: 10px; }
+  .empty { color: var(--muted); padding: 22px 6px; }
+  #toast {
+    position: fixed; right: 18px; bottom: 18px; background: var(--ink); color: #fff; padding: 11px 16px;
+    border-radius: 8px; font-weight: 600; opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none; max-width: 340px;
+  }
+  #toast.show { opacity: 1; transform: none; }
+  #toast.bad { background: var(--danger); }
+  @media (max-width: 820px) {
+    body { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; padding: 12px; }
+    aside h1 { margin-bottom: 10px; }
+    nav { display: flex; gap: 4px; overflow-x: auto; }
+    nav button { width: auto; white-space: nowrap; }
+    main { padding: 18px 14px 60px; }
+    .split { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+</style>
+</head>
+<body>
+<aside>
+  <h1>Restaurant Manager<span>Front of house</span></h1>
+  <nav>
+    <button data-act="nav" data-view="dashboard">Dashboard</button>
+    <button data-act="nav" data-view="orders">Orders</button>
+    <button data-act="nav" data-view="menu">Menu</button>
+    <button data-act="nav" data-view="tables">Tables</button>
+  </nav>
+</aside>
+<main id="main"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const CURRENCY = 'USD'; // change to your currency code, e.g. 'EUR', 'GBP', 'INR'
+const money = n => new Intl.NumberFormat(undefined, { style: 'currency', currency: CURRENCY }).format(n);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = s => document.querySelector(s);
+
+const state = { view: 'dashboard', menu: [], tables: [], orders: [], cart: {}, tableId: '', showAll: false };
+
+async function api(url, opts = {}) {
+  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Request failed (${res.status})`);
+  }
+  return res.status === 204 ? null : res.json();
+}
+const send = (url, method, body) => api(url, { method, body: body === undefined ? undefined : JSON.stringify(body) });
+
+let toastTimer;
+function toast(msg, bad = false) {
+  const t = $('#toast');
+  t.textContent = msg; t.className = 'show' + (bad ? ' bad' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', 3200);
+}
+
+/* ---------- Views ---------- */
+const views = {
+  async dashboard() {
+    const s = await api('/api/dashboard');
+    $('#main').innerHTML = `
+      <h2>Dashboard</h2>
+      <div class="stats">
+        <div class="panel stat"><small>Open orders</small><b>${s.activeOrders}</b></div>
+        <div class="panel stat"><small>Tables in use</small><b>${s.occupiedTables} / ${s.totalTables}</b></div>
+        <div class="panel stat"><small>Today's paid revenue</small><b>${money(s.todayRevenue)}</b></div>
+      </div>
+      <p class="empty">Go to Orders to take a new order, or Tables to see who is seated.</p>`;
+  },
+
+  async orders() {
+    [state.menu, state.tables, state.orders] = await Promise.all([
+      api('/api/menu'), api('/api/tables'),
+      api(`/api/orders?active=${!state.showAll}&size=30`)
+    ]);
+    drawOrders();
+  },
+
+  async menu() {
+    state.menu = await api('/api/menu');
+    $('#main').innerHTML = `
+      <h2>Menu</h2>
+      <form class="panel row" data-form="menu" style="margin-bottom:16px">
+        <label>Dish name<input name="name" required maxlength="100"></label>
+        <label>Category<input name="category" required maxlength="50" list="cats" placeholder="Mains"></label>
+        <datalist id="cats">${[...new Set(state.menu.map(m => m.category))].map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+        <label>Price<input name="price" type="number" min="0.01" step="0.01" required style="width:110px"></label>
+        <button class="btn" style="align-self:end">Add dish</button>
+      </form>
+      <div class="panel">
+        ${state.menu.length ? `<table>
+          <tr><th>Dish</th><th>Category</th><th>Price</th><th>Status</th><th></th></tr>
+          ${state.menu.map(m => `<tr>
+            <td>${esc(m.name)}</td><td>${esc(m.category)}</td><td>${money(m.price)}</td>
+            <td><span class="badge ${m.available ? 'AVAILABLE' : 'CANCELLED'}">${m.available ? 'Available' : 'Sold out'}</span></td>
+            <td class="row">
+              <button class="btn ghost small" data-act="toggle" data-id="${m.id}" data-to="${!m.available}">${m.available ? 'Mark sold out' : 'Mark available'}</button>
+              <button class="btn danger small" data-act="del-menu" data-id="${m.id}">Delete</button>
+            </td></tr>`).join('')}
+        </table>` : `<div class="empty">No dishes yet. Add your first dish above.</div>`}
+      </div>`;
+  },
+
+  async tables() {
+    state.tables = await api('/api/tables');
+    $('#main').innerHTML = `
+      <h2>Tables</h2>
+      <form class="panel row" data-form="table">
+        <label>Table number<input name="number" type="number" min="1" required style="width:130px"></label>
+        <label>Seats<input name="capacity" type="number" min="1" required style="width:100px"></label>
+        <button class="btn" style="align-self:end">Add table</button>
+      </form>
+      <div class="tables">
+        ${state.tables.map(t => `<div class="panel tcard">
+          <b>Table ${t.number}</b><small>${t.capacity} seats</small>
+          <select data-act="table-status" data-id="${t.id}" aria-label="Status of table ${t.number}">
+            ${['AVAILABLE', 'OCCUPIED', 'RESERVED'].map(s => `<option value="${s}" ${t.status === s ? 'selected' : ''}>${s[0] + s.slice(1).toLowerCase()}</option>`).join('')}
+          </select>
+          <div style="margin-top:10px"><button class="btn danger small" data-act="del-table" data-id="${t.id}">Delete</button></div>
+        </div>`).join('') || `<div class="empty">No tables yet. Add one above.</div>`}
+      </div>`;
+  }
+};
+
+/* Orders screen: redrawn locally when the cart changes (no extra server calls). */
+function drawOrders() {
+  const byCat = {};
+  state.menu.forEach(m => (byCat[m.category] ||= []).push(m));
+  const lines = Object.entries(state.cart).filter(([, q]) => q > 0);
+  const total = lines.reduce((sum, [id, q]) => sum + q * state.menu.find(m => m.id == id).price, 0);
+
+  $('#main').innerHTML = `
+    <h2>Orders</h2>
+    <div class="split">
+      <div class="panel">
+        <h3>New order</h3>
+        <label>Table
+          <select id="tableSel">
+            <option value="">Choose a table</option>
+            ${state.tables.map(t => `<option value="${t.id}" ${state.tableId == t.id ? 'selected' : ''}>Table ${t.number} (${t.capacity} seats, ${t.status.toLowerCase()})</option>`).join('')}
+          </select>
+        </label>
+        ${Object.entries(byCat).map(([cat, items]) => `
+          <div class="cat">${esc(cat)}</div>
+          ${items.map(m => `<div class="dish ${m.available ? '' : 'off'}">
+            <div>${esc(m.name)}<small>${money(m.price)}${m.available ? '' : ' - sold out'}</small></div>
+            <div class="qty">
+              <button data-act="dec" data-id="${m.id}" aria-label="Remove one ${esc(m.name)}" ${m.available ? '' : 'disabled'}>-</button>
+              <span>${state.cart[m.id] || 0}</span>
+              <button data-act="inc" data-id="${m.id}" aria-label="Add one ${esc(m.name)}" ${m.available ? '' : 'disabled'}>+</button>
+            </div></div>`).join('')}`).join('') || '<div class="empty">The menu is empty. Add dishes under Menu.</div>'}
+        <div class="row" style="justify-content:space-between;margin-top:16px">
+          <b>Total ${money(total)}</b>
+          <button class="btn" data-act="place" ${lines.length ? '' : 'disabled'}>Place order</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="row" style="justify-content:space-between;margin-bottom:12px">
+          <h3 style="margin:0">${state.showAll ? 'Recent orders' : 'Open orders'}</h3>
+          <button class="btn ghost small" data-act="toggle-history">${state.showAll ? 'Show open only' : 'Show recent history'}</button>
+        </div>
+        ${state.orders.map(orderCard).join('') || '<div class="panel empty">No orders here yet. Pick a table and add dishes to start one.</div>'}
+      </div>
+    </div>`;
+}
+
+const NEXT = { NEW: ['PREPARING', 'Start preparing'], PREPARING: ['SERVED', 'Mark served'], SERVED: ['PAID', 'Take payment'] };
+
+function orderCard(o) {
+  const next = NEXT[o.status];
+  const open = !!next;
+  return `<div class="panel order ${o.status}">
+    <header><b>#${o.id} &middot; Table ${o.tableNumber}</b>
+      <span class="badge ${o.status}">${o.status[0] + o.status.slice(1).toLowerCase()}</span></header>
+    <ul>${o.items.map(i => `<li>${i.quantity} x ${esc(i.name)} <span style="color:var(--muted)">${money(i.subtotal)}</span></li>`).join('')}</ul>
+    <footer>
+      <span><b>${money(o.total)}</b> <small style="color:var(--muted)">${new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small></span>
+      ${open ? `<span class="row">
+        <button class="btn small" data-act="status" data-id="${o.id}" data-to="${next[0]}">${next[1]}</button>
+        <button class="btn danger small" data-act="status" data-id="${o.id}" data-to="CANCELLED">Cancel</button>
+      </span>` : ''}
+    </footer></div>`;
+}
+
+/* ---------- Events ---------- */
+async function render() {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.view === state.view));
+  try { await views[state.view](); } catch (e) { toast(e.message, true); }
+}
+
+async function run(fn, okMsg) {
+  try { await fn(); if (okMsg) toast(okMsg); await render(); } catch (e) { toast(e.message, true); }
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.tagName === 'SELECT') return;
+  const { act, id, to, view } = el.dataset;
+  switch (act) {
+    case 'nav': state.view = view; render(); break;
+    case 'inc': state.cart[id] = (state.cart[id] || 0) + 1; drawOrders(); break;
+    case 'dec': state.cart[id] = Math.max(0, (state.cart[id] || 0) - 1); drawOrders(); break;
+    case 'toggle-history': state.showAll = !state.showAll; render(); break;
+    case 'place': {
+      if (!state.tableId) return toast('Choose a table first.', true);
+      const items = Object.entries(state.cart).filter(([, q]) => q > 0)
+        .map(([menuItemId, quantity]) => ({ menuItemId: Number(menuItemId), quantity }));
+      run(async () => { await send('/api/orders', 'POST', { tableId: Number(state.tableId), items }); state.cart = {}; }, 'Order placed.');
+      break;
+    }
+    case 'status': run(() => send(`/api/orders/${id}/status`, 'PATCH', { status: to }), to === 'CANCELLED' ? 'Order cancelled.' : 'Order updated.'); break;
+    case 'toggle': run(() => send(`/api/menu/${id}/availability`, 'PATCH', { status: to }), 'Menu updated.'); break;
+    case 'del-menu': if (confirm('Delete this dish from the menu?')) run(() => send(`/api/menu/${id}`, 'DELETE'), 'Dish deleted.'); break;
+    case 'del-table': if (confirm('Delete this table?')) run(() => send(`/api/tables/${id}`, 'DELETE'), 'Table deleted.'); break;
+  }
+});
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'tableSel') state.tableId = e.target.value;
+  if (e.target.dataset.act === 'table-status') {
+    run(() => send(`/api/tables/${e.target.dataset.id}/status`, 'PATCH', { status: e.target.value }), 'Table updated.');
+  }
+});
+
+document.addEventListener('submit', e => {
+  const form = e.target.closest('[data-form]');
+  if (!form) return;
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(form));
+  if (form.dataset.form === 'menu') {
+    run(() => send('/api/menu', 'POST', { name: f.name.trim(), category: f.category.trim(), price: parseFloat(f.price), available: true }), 'Dish added.');
+  } else {
+    run(() => send('/api/tables', 'POST', { number: parseInt(f.number, 10), capacity: parseInt(f.capacity, 10) }), 'Table added.');
+  }
+});
+
+render();
+// Keep the open-orders screen fresh for the kitchen without interrupting someone mid-order.
+setInterval(() => { if (state.view === 'orders' && !Object.values(state.cart).some(q => q > 0)) render(); }, 15000);
+</script>
+</body>
+</html>
